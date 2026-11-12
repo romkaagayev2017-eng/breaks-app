@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operator Break System</title>
+<style>
+:root{--navy:#17243b;--blue:#315efb;--bg:#f3f6fb;--ink:#1d293b;--muted:#68758a;--line:#e3e9f2;--green:#16845b;--accent-soft:#edf2ff;--header-soft:#2a3b59}
+body[data-dept="normlya"]{--navy:#421c2b;--blue:#963d5c;--bg:#f8f1f4;--accent-soft:#f7e8ee;--header-soft:#633047}
+body[data-dept="volk"]{--navy:#343a40;--blue:#68727d;--bg:#f1f3f5;--accent-soft:#e9edf0;--header-soft:#505962}
+body[data-dept="new"]{--navy:#263c55;--blue:#477b91;--bg:#f1f6f7;--accent-soft:#e7f1f4;--header-soft:#36546d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Segoe UI",Arial,sans-serif}
+header{background:var(--navy);color:white;padding:18px max(18px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px}.tagline{font-size:12px;color:#bfcbdd}.profile{background:var(--header-soft);padding:9px 13px;border-radius:20px;font-size:12px}
+main{max-width:1160px;margin:26px auto;padding:0 16px}.heading{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:27px;margin:0 0 4px}.muted{color:var(--muted)}.small{font-size:12px}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 8px 26px #263c5c0b}
+.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.toolbar label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+select,button{font:inherit}select{border:1px solid var(--line);border-radius:9px;padding:10px;background:white;color:var(--ink)}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer}.shift button{background:#e9eef7;color:#4c5c75}.shift button.active{background:var(--blue);color:#fff}
+.layout{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}
+.stat{background:#f7f9fd;border:1px solid var(--line);border-radius:11px;padding:11px}.stat b{display:block;font-size:21px}.stat span{font-size:11px;color:var(--muted)}
+h2{font-size:18px;margin:0 0 3px}.desc{color:var(--muted);font-size:12px;margin:0 0 15px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:17px 0 9px}.pill{background:#eaf7f0;color:var(--green);font-size:11px;padding:4px 8px;border-radius:30px;font-weight:700}
+.slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.slot{border:1px solid var(--line);background:#fff;color:#34425a;padding:9px 3px;font-size:12px}.slot:hover:not(:disabled){border-color:var(--blue);background:var(--accent-soft)}.slot:disabled,.slot.unavailable{background:#f0f2f6;color:#929cab;cursor:not-allowed;border-style:dashed}.slot.mine{background:var(--blue);color:#fff;border-color:var(--blue)}
+.note{background:#f1f5ff;color:#42577f;border-radius:10px;padding:11px;margin-top:14px;font-size:12px}.toast{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;background:#fff1ed;border:1px solid #f0d4ca;color:#8d3d32;font-size:13px}.toast.show{display:block}
+.booking{padding:11px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center}.booking:last-child{border:0}.booking strong{font-size:13px}.booking small{display:block;color:var(--muted)}
+.cancel{background:#fff0ef;color:#b54747;font-size:12px;padding:8px}
+.admin{margin-top:16px}.admin table{width:100%;border-collapse:collapse;font-size:12px}.admin th,.admin td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}.admin th{color:var(--muted)}
+footer{max-width:1160px;margin:18px auto 30px;padding:0 16px;color:var(--muted);font-size:11px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style></head>
+<body>
+<header><div><div class="logo">Operator Break System</div><div class="tagline">Расписание перерывов и обедов</div></div><div class="profile">Демо-вход · Главный администратор</div></header>
+<main>
+<div class="heading"><div><h1>Бронирование времени</h1><div class="muted">Расписания отделов изолированы друг от друга</div></div>
+<div class="toolbar"><div><label for="department">Отдел</label><select id="department" onchange="render()"><option value="normlya">Norm / La</option><option value="volk">Volk</option><option value="new">Новый проект (демо)</option></select></div><div class="shift"><label>Смена</label><button id="day" class="active" onclick="setShift('day')">Дневная</button><button id="night" onclick="setShift('night')">Ночная</button></div></div></div>
+<div class="layout">
+<section class="card"><h2 id="scheduleTitle">NORM + LYA · дневная смена</h2><p class="desc">Выбирайте свободные интервалы. Брони других отделов здесь не отображаются и не занимают слоты.</p>
+<div class="stats"><div class="stat"><b id="breakCount">0 / 4</b><span>Перерывы по 10 минут</span></div><div class="stat"><b id="lunchCount">0 / 1</b><span>Обед на 60 минут</span></div><div class="stat"><b id="freeCount">0</b><span>Свободные перерывы</span></div></div>
+<div class="row"><strong>Перерывы</strong><span class="pill">10 минут</span></div><div class="slots" id="breakSlots"></div>
+<div class="row"><strong>Обед</strong><span class="pill">60 минут</span></div><div class="slots" id="lunchSlots"></div>
+<div id="slotNotice" class="toast" role="status" aria-live="polite"></div><div class="note">Между окончанием одного отдыха и началом следующего — минимум 60 минут. Первые 10 минут каждого часа заблокированы согласно исходному графику.</div></section>
+<aside class="card"><h2>Мои бронирования</h2><p class="desc">Демо-оператор · выбранный отдел</p><div id="myBookings" class="muted">Пока нет бронирований.</div>
+<div style="margin-top:15px"><button onclick="clearMine()" style="background:#edf1f8;color:#35445d">Очистить брони этого отдела</button></div>
+<div class="note">Смена отдела переключает расписание. Брони NORM + LYA, VOLK и нового проекта хранятся раздельно.</div></aside></div>
+<section class="card admin"><div class="row" style="margin-top:0"><div><h2>Административный обзор</h2><p class="desc" style="margin:4px 0 0">Главный администратор · демонстрационные данные</p></div><span class="pill">Все отделы</span></div>
+<div style="overflow:auto"><table><thead><tr><th>Отдел</th><th>Смена</th><th>Тип</th><th>Время</th><th>Оператор</th></tr></thead><tbody id="adminRows"><tr><td colspan="5" class="muted">Бронирований пока нет</td></tr></tbody></table></div>
+<div class="note">В полной версии главный администратор сможет создавать отделы и проекты, назначать операторов и администраторов, менять графики и просматривать историю.</div></section>
+</main><footer>Демонстрационный прототип. Часовой пояс целевой системы: Europe/Warsaw. Реальная авторизация и общая база данных пока не подключены.</footer>
+<script>
+const depts={normlya:'Norm / La',volk:'Volk',new:'Новый проект'};
+const blocked={day:['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'],night:['22:00','23:00','00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00']};
+let shift='day';let bookings=[];
+const pad=n=>String(n).padStart(2,'0');
+function makeSlots(type){let start=shift==='day'?10*60:22*60,total=600,step=type==='break'?10:60,a=[];
+for(let i=0;i<total;i+=step){let t=start+i,h=Math.floor(t/60)%24,m=t%60,e=t+step,eh=Math.floor(e/60)%24,em=e%60,s=pad(h)+':'+pad(m),end=pad(eh)+':'+pad(em);a.push({start:s,end,duration:step,blocked:type==='break'&&blocked[shift].includes(s)});}return a;}
+function abs(s){let [h,m]=s.split(':').map(Number),v=h*60+m;return shift==='night'&&h<12?v+1440:v;}
+function mine(){return bookings.filter(b=>b.dept===department.value&&b.shift===shift);}
+function canFit(slot){let a=abs(slot.start),z=a+slot.duration;return mine().every(b=>{let x=abs(b.start),y=x+b.duration;return z+60<=x||a>=y+60;});}
+function reasonFor(s,type,m){if(s.blocked)return 'Это время запрещено расписанием: первый 10-минутный интервал каждого часа недоступен.';if(m.some(b=>b.start===s.start))return 'Это время уже занято другой вашей бронью.';if(type==='Перерыв'&&m.filter(b=>b.type==='Перерыв').length>=4)return 'Лимит достигнут: можно выбрать не более 4 перерывов за смену.';if(type==='Обед'&&m.some(b=>b.type==='Обед'))return 'Обед уже забронирован. За смену разрешён только один обед.';if(!canFit(s))return 'Нельзя выбрать это время: между окончанием предыдущего отдыха и началом следующего должно пройти не менее 60 минут.';return '';}
+function showNotice(message){let el=document.getElementById('slotNotice');el.textContent=message;el.classList.add('show');}
+function draw(id,slots,type){let m=mine();document.getElementById(id).innerHTML=slots.map(s=>{let own=m.find(b=>b.start===s.start&&b.type===type),reason=own?'':reasonFor(s,type,m),unavailable=!!reason;return `<button class="slot ${own?'mine':''} ${unavailable?'unavailable':''}" title="${reason||'Свободное время — нажмите, чтобы забронировать'}" aria-label="${s.start}–${s.end}. ${reason||'Свободно'}" onclick="slotClick('${s.start}','${s.end}','${type}',${s.duration},${s.blocked})">${s.start}–${s.end}</button>`}).join('');}
+function slotClick(start,end,type,duration,blockedSlot){if(blockedSlot){showNotice('Это время недоступно: первый 10-минутный интервал каждого часа заранее закрыт.');return;}let s={start,duration},reason=reasonFor(s,type,mine());if(reason){showNotice(reason);return;}document.getElementById('slotNotice').classList.remove('show');toggle(start,end,type,duration);}
+function render(){let d=department.value;document.body.dataset.dept=d;let m=mine(),br=makeSlots('break'),lu=makeSlots('lunch');document.getElementById('day').classList.toggle('active',shift==='day');document.getElementById('night').classList.toggle('active',shift==='night');document.getElementById('scheduleTitle').textContent=depts[d]+' · '+(shift==='day'?'дневная':'ночная')+' смена';document.getElementById('breakCount').textContent=m.filter(b=>b.type==='Перерыв').length+' / 4';document.getElementById('lunchCount').textContent=m.filter(b=>b.type==='Обед').length+' / 1';document.getElementById('freeCount').textContent=br.filter(s=>!m.some(b=>b.start===s.start)&&canFit(s)).length;draw('breakSlots',br,'Перерыв');draw('lunchSlots',lu,'Обед');document.getElementById('myBookings').innerHTML=m.length?m.sort((a,b)=>a.start.localeCompare(b.start)).map(b=>`<div class="booking"><div><strong>${b.type}: ${b.start}–${b.end}</strong><small>${depts[d]} · ${shift==='day'?'Дневная':'Ночная'}</small></div><button class="cancel" onclick="removeBooking('${b.id}')">Отменить</button></div>`).join(''):'<span class="muted">Пока нет бронирований.</span>';document.getElementById('adminRows').innerHTML=bookings.length?bookings.map(b=>`<tr><td>${depts[b.dept]}</td><td>${b.shift==='day'?'Дневная':'Ночная'}</td><td>${b.type}</td><td>${b.start}–${b.end}</td><td>Демо-оператор</td></tr>`).join(''):'<tr><td colspan="5" class="muted">Бронирований пока нет</td></tr>';}
+function toggle(start,end,type,duration){let d=department.value,own=bookings.find(b=>b.dept===d&&b.shift===shift&&b.start===start&&b.type===type);if(own){removeBooking(own.id);return;}let s={start,duration};if(!canFit(s)){showNotice('Нельзя выбрать это время: между окончанием предыдущего отдыха и началом следующего должно пройти не менее 60 минут.');return;}let m=mine();if(type==='Перерыв'&&m.filter(b=>b.type===type).length>=4)return;if(type==='Обед'&&m.some(b=>b.type===type))return;if(m.some(b=>b.start===start))return;bookings.push({id:Math.random().toString(36).slice(2),dept:d,shift,start,end,type,duration});render();}
+function removeBooking(id){bookings=bookings.filter(b=>b.id!==id);render()}
+function clearMine(){let d=department.value;bookings=bookings.filter(b=>!(b.dept===d&&b.shift===shift));render()}
+function setShift(s){shift=s;render()}
+render();
+</script></body></html>
